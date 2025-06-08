@@ -1,7 +1,9 @@
+import Clientes from "./pages/Clientes";
+
 function App() {
   return (
-    <div className="p-10">
-      <h1 className="text-3xl font-bold text-blue-600">CRM do João 🚀</h1>
+    <div className="min-h-screen bg-white text-gray-900">
+      <Clientes />
     </div>
   );
 }
