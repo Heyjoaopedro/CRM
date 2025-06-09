@@ -47,6 +47,17 @@ export default function Clientes() {
       .catch((err) => alert("Erro ao cadastrar cliente: " + err.message));
   }
 
+  function excluirCliente(id: number) {
+    const confirmar = window.confirm("Tem certeza que deseja excluir este cliente?");
+    if (!confirmar) return;
+
+    fetch(`http://localhost:3001/clientes/${id}`, {
+      method: "DELETE",
+    })
+      .then(() => carregarClientes())
+      .catch((err) => alert("Erro ao excluir cliente: " + err.message));
+  }
+
   return (
     <div className="p-6">
       <div className="flex justify-between items-center mb-4">
@@ -68,6 +79,7 @@ export default function Clientes() {
               <th className="px-4 py-2 border">Telefone</th>
               <th className="px-4 py-2 border">Email</th>
               <th className="px-4 py-2 border">Endereço</th>
+              <th className="px-4 py-2 border">Ações</th>
             </tr>
           </thead>
           <tbody>
@@ -77,6 +89,14 @@ export default function Clientes() {
                 <td className="px-4 py-2 border">{cliente.telefone}</td>
                 <td className="px-4 py-2 border">{cliente.email || "-"}</td>
                 <td className="px-4 py-2 border">{cliente.endereco || "-"}</td>
+                <td className="px-4 py-2 border text-center">
+                  <button
+                    onClick={() => excluirCliente(cliente.id)}
+                    className="text-red-600 hover:underline"
+                  >
+                    🗑 Excluir
+                  </button>
+                </td>
               </tr>
             ))}
           </tbody>
@@ -87,7 +107,7 @@ export default function Clientes() {
       {mostrarModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow w-full max-w-md">
-            <h2 className="text-xl font-semibold mb-4">Novo Cliente</h2>
+            <h2 className="text-xl font-semibold mb-4">👤 Novo Cliente</h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="text"
