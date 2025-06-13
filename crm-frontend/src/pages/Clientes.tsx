@@ -11,6 +11,8 @@ type Cliente = {
 export default function Clientes() {
   const [clientes, setClientes] = useState<Cliente[]>([]);
   const [mostrarModal, setMostrarModal] = useState(false);
+  const [modoEdicao, setModoEdicao] = useState(false);
+  const [clienteSelecionado, setClienteSelecionado] = useState<Cliente | null>(null);
   const [formData, setFormData] = useState({
     nome: "",
     telefone: "",
@@ -32,19 +34,46 @@ export default function Clientes() {
     setFormData({ ...formData, [e.target.name]: e.target.value });
   }
 
+  function abrirModalCadastro() {
+    setModoEdicao(false);
+    setFormData({ nome: "", telefone: "", email: "", endereco: "" });
+    setClienteSelecionado(null);
+    setMostrarModal(true);
+  }
+
+  function abrirModalEdicao(cliente: Cliente) {
+    setModoEdicao(true);
+    setClienteSelecionado(cliente);
+    setFormData({
+      nome: cliente.nome,
+      telefone: cliente.telefone,
+      email: cliente.email || "",
+      endereco: cliente.endereco || "",
+    });
+    setMostrarModal(true);
+  }
+
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
-    fetch("http://localhost:3001/clientes", {
-      method: "POST",
+
+    const url = modoEdicao
+      ? `http://localhost:3001/clientes/${clienteSelecionado?.id}`
+      : "http://localhost:3001/clientes";
+
+    const method = modoEdicao ? "PUT" : "POST";
+
+    fetch(url, {
+      method,
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify(formData),
     })
       .then(() => {
         setMostrarModal(false);
         setFormData({ nome: "", telefone: "", email: "", endereco: "" });
+        setClienteSelecionado(null);
         carregarClientes();
       })
-      .catch((err) => alert("Erro ao cadastrar cliente: " + err.message));
+      .catch((err) => alert("Erro ao salvar cliente: " + err.message));
   }
 
   function excluirCliente(id: number) {
@@ -63,14 +92,13 @@ export default function Clientes() {
       <div className="flex justify-between items-center mb-4">
         <h1 className="text-2xl font-bold">Clientes</h1>
         <button
-          onClick={() => setMostrarModal(true)}
+          onClick={abrirModalCadastro}
           className="bg-blue-600 text-white px-4 py-2 rounded hover:bg-blue-700 transition"
         >
           Novo Cliente
         </button>
       </div>
 
-      {/* TABELA */}
       <div className="overflow-x-auto">
         <table className="min-w-full border border-gray-300 rounded">
           <thead className="bg-gray-100">
@@ -89,7 +117,13 @@ export default function Clientes() {
                 <td className="px-4 py-2 border">{cliente.telefone}</td>
                 <td className="px-4 py-2 border">{cliente.email || "-"}</td>
                 <td className="px-4 py-2 border">{cliente.endereco || "-"}</td>
-                <td className="px-4 py-2 border text-center">
+                <td className="px-4 py-2 border text-center space-x-2">
+                  <button
+                    onClick={() => abrirModalEdicao(cliente)}
+                    className="text-blue-600 hover:underline"
+                  >
+                    ✏️ Editar
+                  </button>
                   <button
                     onClick={() => excluirCliente(cliente.id)}
                     className="text-red-600 hover:underline"
@@ -103,11 +137,12 @@ export default function Clientes() {
         </table>
       </div>
 
-      {/* MODAL */}
       {mostrarModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
           <div className="bg-white p-6 rounded shadow w-full max-w-md">
-            <h2 className="text-xl font-semibold mb-4">👤 Novo Cliente</h2>
+            <h2 className="text-xl font-semibold mb-4">
+              {modoEdicao ? "Editar Cliente" : "Novo Cliente"}
+            </h2>
             <form onSubmit={handleSubmit} className="space-y-4">
               <input
                 type="text"
@@ -155,7 +190,7 @@ export default function Clientes() {
                   type="submit"
                   className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700"
                 >
-                  Salvar
+                  {modoEdicao ? "Atualizar" : "Salvar"}
                 </button>
               </div>
             </form>
